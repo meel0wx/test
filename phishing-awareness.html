@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Microsoft Account – Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ms-blue: #0067b8;
+    --ms-blue-hover: #005a9e;
+    --ms-bg: #f2f2f2;
+    --ms-card: #fff;
+    --ms-text: #1b1b1b;
+    --ms-subtle: #616161;
+    --ms-border: #8a8a8a;
+    --ms-input-bg: #fff;
+    --ms-error: #a80000;
+    --red: #d93025;
+    --green: #137333;
+  }
+
+  body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--ms-bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── LOGIN CARD ── */
+  #login-screen {
+    background: var(--ms-card);
+    width: 440px;
+    max-width: 95vw;
+    padding: 44px 44px 36px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.12);
+    transition: opacity .25s;
+  }
+
+  .ms-logo { margin-bottom: 20px; }
+  .ms-logo svg { width: 108px; height: 24px; }
+
+  h1 { font-size: 1.5rem; font-weight: 600; color: var(--ms-text); margin-bottom: 12px; }
+
+  .subtitle { font-size: .875rem; color: var(--ms-text); margin-bottom: 24px; }
+  .subtitle a { color: var(--ms-blue); text-decoration: none; }
+  .subtitle a:hover { text-decoration: underline; }
+
+  .input-group { margin-bottom: 8px; }
+  .input-group input {
+    width: 100%;
+    padding: 6px 0 6px 0;
+    border: none;
+    border-bottom: 1px solid var(--ms-border);
+    font-size: .9375rem;
+    color: var(--ms-text);
+    background: transparent;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .input-group input:focus { border-bottom-color: var(--ms-blue); }
+  .input-group input::placeholder { color: #767676; }
+
+  .error-msg {
+    font-size: .8125rem;
+    color: var(--ms-error);
+    margin-top: 4px;
+    display: none;
+  }
+
+  .forgot { font-size: .875rem; color: var(--ms-blue); text-decoration: none; display: block; margin: 20px 0; }
+  .forgot:hover { text-decoration: underline; }
+
+  .row-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 36px;
+  }
+
+  .link-btn { font-size: .875rem; color: var(--ms-blue); text-decoration: none; background: none; border: none; cursor: pointer; }
+  .link-btn:hover { text-decoration: underline; }
+
+  .btn-next {
+    background: var(--ms-blue);
+    color: #fff;
+    border: none;
+    padding: 6px 20px;
+    font-size: .9375rem;
+    cursor: pointer;
+    min-width: 108px;
+    height: 32px;
+    font-family: inherit;
+    transition: background .15s;
+  }
+  .btn-next:hover { background: var(--ms-blue-hover); }
+
+  .divider { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+  .sign-up { font-size: .875rem; color: var(--ms-text); }
+  .sign-up a { color: var(--ms-blue); text-decoration: none; }
+  .sign-up a:hover { text-decoration: underline; }
+
+  .footer-links {
+    margin-top: 28px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .footer-links a {
+    font-size: .75rem;
+    color: var(--ms-subtle);
+    text-decoration: none;
+  }
+  .footer-links a:hover { text-decoration: underline; }
+
+  /* step 2 – password */
+  #step-password { display: none; }
+  .user-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--ms-blue);
+    color: #fff; font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600;
+  }
+  .user-email { font-size: .875rem; color: var(--ms-text); }
+
+  /* ── REVEAL OVERLAY ── */
+  #reveal-screen {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.7);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    animation: fadeIn .35s ease;
+  }
+  @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+
+  .reveal-card {
+    background: #fff;
+    max-width: 560px;
+    width: 100%;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,.25);
+    animation: slideUp .4s cubic-bezier(.2,.8,.4,1);
+  }
+  @keyframes slideUp { from { transform: translateY(40px); opacity:0 } to { transform: translateY(0); opacity:1 } }
+
+  .reveal-header {
+    background: #c00;
+    padding: 24px 32px;
+    color: #fff;
+  }
+  .reveal-header .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,.18);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .reveal-header h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 6px; }
+  .reveal-header p { font-size: .9rem; opacity: .9; }
+
+  .reveal-body { padding: 28px 32px; }
+  .reveal-body p { font-size: .9rem; color: #333; line-height: 1.6; margin-bottom: 16px; }
+
+  .clues-title {
+    font-size: .8125rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: #c00;
+    margin-bottom: 10px;
+  }
+
+  .clue-list { list-style: none; margin-bottom: 20px; }
+  .clue-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: .875rem;
+    color: #222;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+    line-height: 1.5;
+  }
+  .clue-list li:last-child { border-bottom: none; }
+  .clue-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+  .tips-box {
+    background: #f0f7ff;
+    border-left: 4px solid #0067b8;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    border-radius: 0 4px 4px 0;
+  }
+  .tips-box .tips-title { font-size: .8rem; font-weight: 700; color: #0067b8; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .06em; }
+  .tips-box ul { padding-left: 18px; }
+  .tips-box ul li { font-size: .85rem; color: #333; margin-bottom: 5px; line-height: 1.5; }
+
+  .safe-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #e6f4ea; color: #137333;
+    font-size: .8125rem; font-weight: 600;
+    padding: 6px 14px; border-radius: 20px; margin-bottom: 20px;
+  }
+
+  .btn-close {
+    width: 100%;
+    background: #0067b8;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    font-size: .9375rem;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background .15s;
+  }
+  .btn-close:hover { background: #005a9e; }
+
+  /* URL bar spoof */
+  .fake-url-bar {
+    background: #e0e0e0;
+    border-radius: 40px;
+    padding: 5px 16px;
+    font-size: .78rem;
+    color: #333;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    max-width: 440px;
+  }
+  .fake-url-bar .lock { color: #767676; }
+  .fake-url-bar .url-text { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .fake-url-bar .sus { color: #c00; font-weight: 700; }
+
+  @media (max-width: 500px) {
+    #login-screen { padding: 32px 24px 28px; }
+    .reveal-header, .reveal-body { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Fake URL bar (visual element only) -->
+<div class="fake-url-bar">
+  <span class="lock">🔓</span>
+  <span class="url-text">http://<span class="sus">micros0ft-login.suspicious-domain.com</span>/signin</span>
+</div>
+
+<!-- ── LOGIN CARD ── -->
+<div id="login-screen">
+
+  <!-- Microsoft SVG logo (official shape) -->
+  <div class="ms-logo">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 24" aria-label="Microsoft">
+      <path d="M0 0h11.378v11.378H0z" fill="#f25022"/>
+      <path d="M12.622 0H24v11.378H12.622z" fill="#7fba00"/>
+      <path d="M0 12.622h11.378V24H0z" fill="#00a4ef"/>
+      <path d="M12.622 12.622H24V24H12.622z" fill="#ffb900"/>
+      <text x="28" y="18" font-family="Segoe UI, sans-serif" font-size="15" font-weight="600" fill="#737373">Microsoft</text>
+    </svg>
+  </div>
+
+  <!-- Step 1: Email -->
+  <div id="step-email">
+    <h1>Sign in</h1>
+    <p class="subtitle">No account? <a href="#">Create one!</a></p>
+    <div class="input-group">
+      <input type="email" id="email-input" placeholder="Email, phone, or Skype" autocomplete="off" />
+      <div class="error-msg" id="email-error">Enter a valid email address.</div>
+    </div>
+    <a href="#" class="forgot">Can't access your account?</a>
+    <div class="row-actions">
+      <button class="link-btn">Sign-in options</button>
+      <button class="btn-next" onclick="nextStep()">Next</button>
+    </div>
+    <hr class="divider">
+    <p class="sign-up">No account? <a href="#">Create one!</a></p>
+    <div class="footer-links">
+      <a href="#">Terms of use</a>
+      <a href="#">Privacy &amp; cookies</a>
+    </div>
+  </div>
+
+  <!-- Step 2: Password -->
+  <div id="step-password">
+    <div class="user-display">
+      <div class="avatar" id="avatar-initial">?</div>
+      <span class="user-email" id="email-display"></span>
+    </div>
+    <h1>Enter password</h1>
+    <div class="input-group" style="margin-bottom:4px">
+      <input type="password" id="password-input" placeholder="Password" autocomplete="off" />
+      <div class="error-msg" id="pass-error">Password is required.</div>
+    </div>
+    <a href="#" class="forgot">Forgot my password</a>
+    <div class="row-actions">
+      <button class="link-btn" onclick="backToEmail()">← Back</button>
+      <button class="btn-next" onclick="submitLogin()">Sign in</button>
+    </div>
+    <div class="footer-links" style="margin-top:28px">
+      <a href="#">Terms of use</a>
+      <a href="#">Privacy &amp; cookies</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── REVEAL OVERLAY ── -->
+<div id="reveal-screen">
+  <div class="reveal-card">
+    <div class="reveal-header">
+      <div class="badge">🎣 Phishing Simulation</div>
+      <h2>You've been phished!</h2>
+      <p>This was a <strong>controlled security awareness exercise</strong>. No real data was captured.</p>
+    </div>
+    <div class="reveal-body">
+      <div class="safe-badge">✅ Your credentials were NOT stolen — this is a training exercise</div>
+
+      <p>This page was designed to look like the real Microsoft sign-in page. Could you spot the difference? Here are the red flags you should have noticed:</p>
+
+      <p class="clues-title">🚩 Red Flags on This Page</p>
+      <ul class="clue-list">
+        <li><span class="clue-icon">🔓</span><div><strong>Insecure / wrong URL</strong> — The address bar showed <em>micros0ft-login.suspicious-domain.com</em> with a "0" instead of an "o", and no HTTPS padlock. Microsoft always uses <em>login.microsoftonline.com</em>.</div></li>
+        <li><span class="clue-icon">📧</span><div><strong>Unsolicited email link</strong> — Real companies rarely send urgent "verify your account" emails. Always go directly to the website yourself.</div></li>
+        <li><span class="clue-icon">🏷️</span><div><strong>Slightly off branding</strong> — Phishing pages often have subtle logo differences, wrong fonts, or odd spacing. Always compare carefully.</div></li>
+        <li><span class="clue-icon">⚡</span><div><strong>Urgency tactics</strong> — Phishing messages often pressure you ("Your account will be suspended!"). Legitimate services won't rush you into clicking.</div></li>
+        <li><span class="clue-icon">🔗</span><div><strong>Hovering reveals the real link</strong> — Always hover over links in emails before clicking to see the actual destination URL.</div></li>
+      </ul>
+
+      <div class="tips-box">
+        <div class="tips-title">💡 How to Protect Yourself</div>
+        <ul>
+          <li>Always check the full URL before entering credentials.</li>
+          <li>Use a password manager — it won't autofill on fake sites.</li>
+          <li>Enable <strong>Multi-Factor Authentication (MFA)</strong> on all accounts.</li>
+          <li>Never click links in unexpected emails — type the URL directly.</li>
+          <li>When in doubt, call IT or the company directly.</li>
+          <li>Report suspicious emails to your security team immediately.</li>
+        </ul>
+      </div>
+
+      <button class="btn-close" onclick="closReveal()">I understand — close this training</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function nextStep() {
+    const email = document.getElementById('email-input').value.trim();
+    const err = document.getElementById('email-error');
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      err.style.display = 'block';
+      return;
+    }
+    err.style.display = 'none';
+    document.getElementById('step-email').style.display = 'none';
+    document.getElementById('step-password').style.display = 'block';
+    document.getElementById('email-display').textContent = email;
+    document.getElementById('avatar-initial').textContent = email[0].toUpperCase();
+    document.getElementById('password-input').focus();
+  }
+
+  function backToEmail() {
+    document.getElementById('step-password').style.display = 'none';
+    document.getElementById('step-email').style.display = 'block';
+  }
+
+  function submitLogin() {
+    const pw = document.getElementById('password-input').value;
+    const err = document.getElementById('pass-error');
+    if (!pw) {
+      err.style.display = 'block';
+      return;
+    }
+    err.style.display = 'none';
+    // Show the reveal overlay instead of stealing credentials
+    const reveal = document.getElementById('reveal-screen');
+    reveal.style.display = 'flex';
+  }
+
+  function closReveal() {
+    document.getElementById('reveal-screen').style.display = 'none';
+    // Reset form
+    document.getElementById('email-input').value = '';
+    document.getElementById('password-input').value = '';
+    document.getElementById('step-password').style.display = 'none';
+    document.getElementById('step-email').style.display = 'block';
+  }
+
+  // Allow Enter key
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    if (document.getElementById('step-password').style.display === 'block') submitLogin();
+    else nextStep();
+  });
+</script>
+</body>
+</html>
